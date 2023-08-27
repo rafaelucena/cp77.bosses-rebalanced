@@ -1,3 +1,10 @@
+// Version v1.63.1.0
+module BossesRebalanced
+
+// CRAFTING SYSTEM SETTINGS | PARAMETERS
+@addMethod(RPGManager)
+public static func IsBossesRebalancedEnabled() -> Bool = true;
+
 @addField(NPCPuppet)
 public let m_isAllowedDeath: Bool = true;
 
@@ -16,8 +23,12 @@ public final func MarkAllowedDeath() -> Void {
   this.m_isAllowedDeath = true;
 }
 
-@replaceMethod(NPCPuppet)
+@wrapMethod(NPCPuppet)
 private final func ProcessStatusEffectApplication(evt: ref<ApplyStatusEffectEvent>) -> Void {
+  if !RPGManager.IsBossesRebalancedEnabled() {
+    return wrappedMethod(evt);
+  }
+
   let newStatusEffectPrio: Float;
   let topPrioStatusEffectPrio: Float;
   let topProEffect: ref<StatusEffect>;
@@ -38,6 +49,7 @@ private final func ProcessStatusEffectApplication(evt: ref<ApplyStatusEffectEven
       topPrioStatusEffectPrio = topProEffect.GetRecord().AIData().Priority();
     };
   };
+  // Main mod changes
   if Equals(evt.staticData.StatusEffectType().Type(), gamedataStatusEffectType.Defeated) {
     if !(this.IsAllowedDeath()) {
       StatusEffectHelper.RemoveStatusEffect(this, t"BaseStatusEffect.Defeated");
